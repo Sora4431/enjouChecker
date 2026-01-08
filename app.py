@@ -2,6 +2,8 @@ import streamlit as st
 import google.generativeai as genai
 import json
 import os
+import urllib.parse
+import pandas as pd
 
 # 1. 設定と準備
 st.set_page_config(
@@ -80,6 +82,7 @@ if submitted:
                     prompt = f"""
                     あなたはSNS（特にX/Twitter）における「炎上リスク判定」のプロフェッショナルです。
                     以下の投稿を入力とし、4つの異なる視点（キャラクター）から辛口で分析を行ってください。
+                    加えて、日本国内の地域ごとの文化摩擦（関東vs関西、食文化、方言など）についても分析してください。
                     
                     【入力情報】
                     - 投稿者属性: {user_type}
@@ -96,6 +99,10 @@ if submitted:
                     
                     ※「公式垢」の場合は、些細な表現でもリスク判定を厳しく跳ね上げてください。
                     
+                    【地域分析要件】
+                    投稿内容が特定の地域（関東、関西、北海道・東北、九州・沖縄など）で反感を買う可能性がないか分析してください。
+                    特に「マック/マクド」のような呼び方の違い、食文化、方言、地域性に関する話題に敏感に反応してください。
+                    
                     【出力形式】
                     必ず以下のJSONフォーマットのみを出力してください。Markdownのコードブロック(```json)は不要です。
                     {{
@@ -106,6 +113,12 @@ if submitted:
                             "reply_ojisan": {{ "rating": (1〜5の整数), "comment": "..." }},
                             "doxing_team": {{ "rating": (1〜5の整数), "comment": "..." }}
                         }},
+                        "regional_analysis": [
+                            {{ "region": "関東", "risk_score": (0〜100), "reason": "..." }},
+                            {{ "region": "関西", "risk_score": (0〜100), "reason": "..." }},
+                            {{ "region": "北海道・東北", "risk_score": (0〜100), "reason": "..." }},
+                            {{ "region": "九州・沖縄", "risk_score": (0〜100), "reason": "..." }}
+                        ],
                         "summary": "全体の総評（100文字以内）"
                     }}
                     """
@@ -128,6 +141,28 @@ if submitted:
                     # スコアに応じたカラーリング
                     bar_color = "red" if score >= 80 else "orange" if score >= 50 else "green"
                     st.progress(score / 100)
+
+                    # 地域別リスク可視化
+                    st.subheader("🗺️ 地域別炎上リスク")
+                    regional_data = result.get("regional_analysis", [])
+                    
+                    if regional_data:
+                        try:
+                            # データの整形
+                            regions = [item["region"] for item in regional_data]
+                            scores = [item["risk_score"] for item in regional_data]
+                            
+                            df_regional = pd.DataFrame({"地域": regions, "リスクスコア": scores})
+                            df_regional.set_index("地域", inplace=True)
+                            
+                            st.bar_chart(df_regional)
+                            
+                            # 高リスク地域の警告
+                            for item in regional_data:
+                                if item.get("risk_score", 0) >= 60:
+                                    st.warning(f"⚠️ **{item['region']}** 警戒: {item['reason']}")
+                        except Exception as e:
+                            st.error(f"地域分析の表示中にエラーが発生しました: {e}")
                     
                     # 詳細カード表示
                     critiques = result.get("critiques", {})
@@ -164,6 +199,8 @@ if submitted:
                         okami_comment = okami_comment[:30] + "..."
                         
                     share_text = f"【炎上リスク {score}%】京都の女将に『{okami_comment}』と言われました... #炎上リスク診断"
+                    encoded_text = urllib.parse.quote(share_text)
+                    encoded_url = urllib.parse.quote("https://your-app-url.streamlit.app")
                     share_url = f"https://x.com/intent/tweet?text={encoded_text}&url={encoded_url}"
                     
                     st.markdown(f"""
