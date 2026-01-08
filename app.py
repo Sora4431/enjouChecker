@@ -164,7 +164,7 @@ if submitted:
                         okami_comment = okami_comment[:30] + "..."
                         
                     share_text = f"【炎上リスク {score}%】京都の女将に『{okami_comment}』と言われました... #炎上リスク診断"
-                    share_url = f"https://twitter.com/intent/tweet?text={share_text}&url=https://your-app-url.streamlit.app"
+                    share_url = f"https://x.com/intent/tweet?text={encoded_text}&url={encoded_url}"
                     
                     st.markdown(f"""
                     <a href="{share_url}" target="_blank" style="text-decoration:none;">
