@@ -43,4 +43,6 @@ streamlit run app.py
 
 ## 👨‍💻 開発者情報
 
-Developed by [Your Name]
+Developed by Sora4431
+
+
