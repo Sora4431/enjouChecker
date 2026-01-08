@@ -75,7 +75,7 @@ if submitted:
             with st.spinner("AIが炎上リスクを分析中..."):
                 try:
                     # モデルの準備
-                    model = genai.GenerativeModel("gemini-1.5-flash")
+                    model = genai.GenerativeModel("gemini-2.5-flash")
                     
                     prompt = f"""
                     あなたはSNS（特にX/Twitter）における「炎上リスク判定」のプロフェッショナルです。
