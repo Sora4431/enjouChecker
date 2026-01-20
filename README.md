@@ -15,18 +15,22 @@ X（旧Twitter）への投稿予定のテキストを入力すると、AIが炎�
 ローカル環境で動作させるための手順です。
 
 ### 1. リポジトリのクローン
+
 ```bash
 git clone https://github.com/[あなたのユーザー名]/[リポジトリ名].git
 cd [リポジトリ名]
 ```
 
 ### 2. 依存関係のインストール
+
 Python 3.9以上推奨。
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 3. APIキーの設定 (重要)
+
 このアプリは Google Gemini API を使用します。
 
 1. [Google AI Studio](https://aistudio.google.com/) で APIキーを取得してください。
@@ -35,18 +39,19 @@ pip install -r requirements.txt
    (※このファイルは機密情報を含むため、Gitにはコミットしないでください)
 
 **.streamlit/secrets.toml**
+
 ```toml
 GEMINI_API_KEY = "ここに取得したAPIキーを貼り付け"
 ```
 
 ### 4. アプリの起動
+
 ```bash
 streamlit run app.py
 ```
+
 ブラウザが自動的に立ち上がり、アプリが表示されます。
 
 ## 👨‍💻 開発者情報
 
 Developed by Sora4431
-
-
