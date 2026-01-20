@@ -4,6 +4,7 @@ import json
 import os
 import urllib.parse
 import pandas as pd
+import altair as alt
 
 # 1. 設定と準備
 st.set_page_config(
@@ -175,9 +176,14 @@ if submitted:
                             scores = [item["risk_score"] for item in regional_data]
                             
                             df_regional = pd.DataFrame({"地域": regions, "リスクスコア": scores})
-                            df_regional.set_index("地域", inplace=True)
                             
-                            st.bar_chart(df_regional, y_max=100)
+                            # Altairでグラフを作成してY軸を0-100に固定
+                            chart = alt.Chart(df_regional).mark_bar().encode(
+                                x=alt.X('地域:N', axis=alt.Axis(labelAngle=0)),
+                                y=alt.Y('リスクスコア:Q', scale=alt.Scale(domain=[0, 100]))
+                            ).properties(height=400)
+                            
+                            st.altair_chart(chart, use_container_width=True)
                             
                             # 高リスク地域の警告
                             for item in regional_data:
