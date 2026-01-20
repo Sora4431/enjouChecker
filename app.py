@@ -177,7 +177,7 @@ if submitted:
                             df_regional = pd.DataFrame({"地域": regions, "リスクスコア": scores})
                             df_regional.set_index("地域", inplace=True)
                             
-                            st.bar_chart(df_regional)
+                            st.bar_chart(df_regional, y_max=100)
                             
                             # 高リスク地域の警告
                             for item in regional_data:
