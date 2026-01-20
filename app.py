@@ -29,8 +29,16 @@ st.info("🚀 将来的にXアカウント連携機能を実装予定（現在�
 with st.form("diagnosis_form"):
     user_type = st.radio(
         "投稿者属性",
-        ["一般人", "インフルエンサー", "公式垢", "おじさん構文", "就活生"],
+        ["一般人", "インフルエンサー", "公式垢", "就活生"],
         horizontal=True
+    )
+    
+    user_age = st.number_input(
+        "年齢",
+        min_value=0,
+        max_value=120,
+        value=30,
+        step=1
     )
     
     post_text = st.text_area(
@@ -42,7 +50,7 @@ with st.form("diagnosis_form"):
     with st.expander("詳細オプション：AIにあなたのことを教える"):
         user_profile = st.text_area(
             "プロフィール（自由記述）",
-            placeholder="例: 30代男性、IT企業勤務。趣味はラーメン巡り。"
+            placeholder="例: IT企業勤務。趣味はラーメン巡り。"
         )
         has_history = st.checkbox("過去に炎上した経験がある")
     
@@ -86,12 +94,14 @@ if submitted:
                     
                     【入力情報】
                     - 投稿者属性: {user_type}
+                    - 年齢: {user_age}歳
                     - 投稿テキスト: {post_text}
                     - プロフィール詳細: {user_profile}
                     - 過去の炎上経験: {"あり" if has_history else "なし"}
                     
                     【分析要件】
-                    以下の4つの視点でリスクを評価し、コメントしてください。
+                    年齢は炎上リスク判定において重要な要素です。若年層と高年層で求められる表現や言葉遣いが異なり、
+                    年齢に不相応な表現は炎上のリスクを高める傾向があります。年齢を考慮した上で、以下の4つの視点でリスクを評価し、コメントしてください。
                     1. 【学級委員長】: マナー・倫理観・社会通念上の正しさ基準。真面目な口調。
                     2. 【京都の老舗女将】: 特有の「いけず」な視点。京都弁で、遠回しだが強烈な皮肉。
                     3. 【クソリプおじさん】: 頼んでもいないアドバイス、自分語り、上から目線の説教。「FF外から失礼します」等。
