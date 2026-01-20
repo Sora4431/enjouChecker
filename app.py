@@ -103,6 +103,7 @@ if submitted:
                     【分析要件】
                     年齢は炎上リスク判定において重要な要素です。若年層と高年層で求められる表現や言葉遣いが異なり、
                     年齢に不相応な表現は炎上のリスクを高める傾向があります。年齢を考慮した上で、以下の4つの視点でリスクを評価し、コメントしてください。
+                                        評価は0から5の整数で行い、0は炎上要素が全くない場合に使用してください。
                     1. 【学級委員長】: マナー・倫理観・社会通念上の正しさ基準。真面目な口調。
                     2. 【京都の老舗女将】: 特有の「いけず」な視点。京都弁で、遠回しだが強烈な皮肉。
                     3. 【クソリプおじさん】: 頼んでもいないアドバイス、自分語り、上から目線の説教。「FF外から失礼します」等。
@@ -130,10 +131,10 @@ if submitted:
                         "total_score": (0〜100の整数。100が高リスク),
                         "detected_language": ("日本語", "英語", "その他" など),
                         "critiques": {{
-                            "class_rep": {{ "rating": (1〜5の整数), "comment": "..." }},
-                            "kyoto_okami": {{ "rating": (1〜5の整数), "comment": "..." }},
-                            "reply_ojisan": {{ "rating": (1〜5の整数), "comment": "..." }},
-                            "doxing_team": {{ "rating": (1〜5の整数), "comment": "..." }}
+                            "class_rep": {{ "rating": (0〜5の整数。0は炎上要素なし), "comment": "..." }},
+                            "kyoto_okami": {{ "rating": (0〜5の整数。0は炎上要素なし), "comment": "..." }},
+                            "reply_ojisan": {{ "rating": (0〜5の整数。0は炎上要素なし), "comment": "..." }},
+                            "doxing_team": {{ "rating": (0〜5の整数。0は炎上要素なし), "comment": "..." }}
                         }},
                         "regional_analysis": [
                             {{ "region": "日本", "risk_score": (0〜100), "reason": "..." }},
@@ -156,9 +157,40 @@ if submitted:
                         response_text = response_text[:-3]
                     
                     result = json.loads(response_text)
-                    
+
+                    # 評価の正規化（0〜5）と総合スコア再計算
+                    critiques = result.get("critiques", {})
+                    critique_keys = ["class_rep", "kyoto_okami", "reply_ojisan", "doxing_team"]
+
+                    def normalize_rating(val):
+                        try:
+                            return max(0, min(5, int(val)))
+                        except Exception:
+                            return 0
+
+                    normalized_ratings = []
+                    for key in critique_keys:
+                        rating = normalize_rating(critiques.get(key, {}).get("rating", 0))
+                        # critiques内に整形済みのratingを戻して後段表示でも使用
+                        if key not in critiques:
+                            critiques[key] = {}
+                        critiques[key]["rating"] = rating
+                        normalized_ratings.append(rating)
+
+                    rating_based_score = round((sum(normalized_ratings) / len(normalized_ratings)) * 20) if normalized_ratings else 0
+
+                    raw_total_score = result.get("total_score")
+                    if raw_total_score is None:
+                        score = rating_based_score
+                    else:
+                        try:
+                            clamped = max(0, min(100, int(raw_total_score)))
+                        except Exception:
+                            clamped = rating_based_score
+                        # モデル出力を尊重しつつ、0-5評価から計算したスコアとも整合
+                        score = max(clamped, rating_based_score)
+
                     # 5. 結果表示
-                    score = result.get("total_score", 0)
                     st.subheader(f"判定結果: 炎上リスク {score}%")
                     
                     # スコアに応じたカラーリング
@@ -193,8 +225,6 @@ if submitted:
                             st.error(f"地域分析の表示中にエラーが発生しました: {e}")
                     
                     # 詳細カード表示
-                    critiques = result.get("critiques", {})
-                    
                     def display_card(role_name, emoji, key):
                         data = critiques.get(key, {})
                         rating = data.get("rating", 0)
