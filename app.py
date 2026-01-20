@@ -222,7 +222,7 @@ if submitted:
                         
                     share_text = f"【炎上リスク {score}%】京都の女将に『{okami_comment}』と言われました... #炎上リスク診断"
                     encoded_text = urllib.parse.quote(share_text)
-                    encoded_url = urllib.parse.quote("https://your-app-url.streamlit.app")
+                    encoded_url = urllib.parse.quote("https://enjouchecker.streamlit.app/")
                     share_url = f"https://x.com/intent/tweet?text={encoded_text}&url={encoded_url}"
                     
                     st.markdown(f"""
